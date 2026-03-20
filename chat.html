@@ -1,484 +1,329 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vibe Coding 工作台 (三态全能版)</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
 
-      body {
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-        /* 锁死整个 body 的滚动 */
-        background-color: #f1f5f9;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          sans-serif;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vibe Coding 工作台 (三态全能版)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      /* ==== 左侧面板 ==== */
-      .left-panel {
-        position: relative;
-        /* 为侧边悬浮按钮提供定位 */
-        width: 500px;
-        flex-shrink: 0;
-        border-right: 1px solid #e2e8f0;
-        background-color: #fff;
-        z-index: 10;
-        transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        overflow: hidden;
-      }
+    body {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      /* 锁死整个 body 的滚动 */
+      background-color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        sans-serif;
+    }
 
-      .left-panel iframe {
-        width: 500px;
-        /* 锁死内部宽度防变形 */
-        height: 100%;
-        border: none;
-        display: block;
-        /* iframe 自身的宽度也要有丝滑过渡 */
-        transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-      }
+    /* ==== 左侧面板 ==== */
+    .left-panel {
+      position: relative;
+      /* 为侧边悬浮按钮提供定位 */
+      width: 500px;
+      flex-shrink: 0;
+      border-right: 1px solid #e2e8f0;
+      background-color: #fff;
+      z-index: 10;
+      transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      overflow: hidden;
+    }
 
-      /* ==== 新增：左侧展开/收起按钮 ==== */
-      #left-toggle-btn {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 24px;
-        height: 64px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-right: none;
-        border-radius: 8px 0 0 8px;
-        /* 左侧圆角，贴紧右侧边框 */
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        color: #64748b;
-        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
-        transition: background 0.2s, color 0.2s;
-      }
+    .left-panel iframe {
+      width: 500px;
+      /* 锁死内部宽度防变形 */
+      height: 100%;
+      border: none;
+      display: block;
+      /* iframe 自身的宽度也要有丝滑过渡 */
+      transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
 
-      #left-toggle-btn:hover {
-        background: #f8fafc;
-        color: #0f172a;
-      }
+    /* ==== 新增：左侧展开/收起按钮 ==== */
+    #left-toggle-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 64px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-right: none;
+      border-radius: 8px 0 0 8px;
+      /* 左侧圆角，贴紧右侧边框 */
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      color: #64748b;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
+      transition: background 0.2s, color 0.2s;
+    }
 
-      #left-toggle-btn svg {
-        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-      }
+    #left-toggle-btn:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
 
-      /* ==== 右侧工作区 ==== */
-      .right-panel {
-        flex: 1;
-        position: relative;
-        display: flex;
-        overflow: hidden;
-        /* 永远隐藏外层滚动条，彻底消灭双滚动条BUG */
-      }
+    #left-toggle-btn svg {
+      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
 
-      /* ==== 虚拟画布容器 ==== */
-      .canvas-wrapper {
-        width: 1920px;
-        height: 1080px;
-        background-color: #fff;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
-          0 0 0 1px rgba(0, 0, 0, 0.02);
-        flex-shrink: 0;
-        transform-origin: center center;
-      }
+    /* ==== 右侧工作区 ==== */
+    .right-panel {
+      flex: 1;
+      position: relative;
+      display: flex;
+      overflow: hidden;
+      /* 永远隐藏外层滚动条，彻底消灭双滚动条BUG */
+    }
 
-      .canvas-wrapper iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-        display: block;
-      }
+    /* ==== 虚拟画布容器 ==== */
+    .canvas-wrapper {
+      width: 1920px;
+      height: 1080px;
+      background-color: #fff;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+      flex-shrink: 0;
+      transform-origin: center center;
+    }
 
-      /* ==== 悬浮工具栏 ==== */
-      .floating-toolbar {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        display: flex;
-        gap: 12px;
-        background: #ffffff;
-        padding: 6px;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        backdrop-filter: blur(4px);
-      }
+    .canvas-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
 
-      .tool-btn {
-        background-color: transparent;
-        color: #64748b;
-        border: none;
-        border-radius: 6px;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-      }
+    /* ==== 悬浮工具栏 ==== */
+    .floating-toolbar {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      z-index: 10000;
+      display: flex;
+      gap: 12px;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(4px);
+    }
 
-      .tool-btn:hover {
-        background-color: #f1f5f9;
-        color: #0f172a;
-      }
+    .tool-btn {
+      background-color: transparent;
+      color: #64748b;
+      border: none;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
 
-      .tool-btn:active {
-        transform: scale(0.95);
-      }
-    </style>
-  </head>
+    .tool-btn:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
 
-  <body>
-       
-    <div class="left-panel" id="left-panel">
-             
-      <button id="left-toggle-btn" title="展开为全屏">
-                   
-        <svg
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          stroke="currentColor"
-          stroke-width="2"
-          fill="none"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-                         
-          <polyline points="9 6 15 12 9 18"></polyline>
-                     
+    .tool-btn:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="left-panel" id="left-panel">
+    <button id="left-toggle-btn" title="展开为全屏">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 6 15 12 9 18"></polyline>
+      </svg>
+    </button>
+    <iframe id="opencode-iframe" src="https://app.opencode.ai/"></iframe>
+  </div>
+  <div class="right-panel" id="right-panel">
+    <div class="floating-toolbar">
+      <button id="fullscreen-btn" class="tool-btn" title="全屏响应式预览">
+        <svg id="icon-expand" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+          fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
         </svg>
-               
+        <svg id="icon-shrink" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+          fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none">
+          <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+        </svg>
       </button>
-             
-      <iframe id="opencode-iframe" src="https://app.opencode.ai/"></iframe>    
+
+      <button id="refresh-btn" class="tool-btn" title="刷新预览页面">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+
+      <button id="toggleDomPicker-btn" class="tool-btn" title="开启元素选择">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path>
+          <path d="M13 13l6 6"></path>
+        </svg>
+      </button>
     </div>
-
-       
-    <div class="right-panel" id="right-panel">
-                     
-      <div class="floating-toolbar">
-                   
-        <button id="fullscreen-btn" class="tool-btn" title="全屏响应式预览">
-                         
-          <svg
-            id="icon-expand"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-                               
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                           
-          </svg>
-                         
-          <svg
-            id="icon-shrink"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            style="display: none"
-          >
-                               
-            <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
-                           
-          </svg>
-                     
-        </button>
-                   
-        <button id="refresh-btn" class="tool-btn" title="刷新预览页面">
-                         
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-                               
-            <polyline points="23 4 23 10 17 10"></polyline>
-                               
-            <polyline points="1 20 1 14 7 14"></polyline>
-                               
-            <path
-              d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-            ></path>
-                           
-          </svg>
-                     
-        </button>
-               
-      </div>
-                     
-      <div class="canvas-wrapper" id="canvas-wrapper">
-                   
-        <iframe id="preview-iframe" src="http://127.0.0.1:7689/"></iframe>      
-         
-      </div>
-
-         
+    <div class="canvas-wrapper" id="canvas-wrapper">
+      <iframe id="preview-iframe" src="http://127.0.0.1:7686/" allow="clipboard-write 'src'"></iframe>
     </div>
+  </div>
+  <script>
+    const leftPanel = document.getElementById("left-panel");
+    const leftIframe = leftPanel.querySelector("iframe"); // 获取左侧内部 iframe
+    const leftToggleBtn = document.getElementById("left-toggle-btn");
 
-       
-    <script>
-      const leftPanel = document.getElementById("left-panel");
-      const leftIframe = leftPanel.querySelector("iframe"); // 获取左侧内部 iframe
-      const leftToggleBtn = document.getElementById("left-toggle-btn");
+    const rightPanel = document.getElementById("right-panel");
+    const canvasWrapper = document.getElementById("canvas-wrapper");
+    const fullscreenBtn = document.getElementById("fullscreen-btn");
+    const refreshBtn = document.getElementById("refresh-btn");
+    const toggleDomPickerBtn = document.getElementById("toggleDomPicker-btn");
+    const iconExpand = document.getElementById("icon-expand");
+    const iconShrink = document.getElementById("icon-shrink");
+    const iframe = document.getElementById("preview-iframe");
 
-      const rightPanel = document.getElementById("right-panel");
-      const canvasWrapper = document.getElementById("canvas-wrapper");
-      const fullscreenBtn = document.getElementById("fullscreen-btn");
-      const refreshBtn = document.getElementById("refresh-btn");
-      const iconExpand = document.getElementById("icon-expand");
-      const iconShrink = document.getElementById("icon-shrink");
-      const iframe = document.getElementById("preview-iframe");
+    // ==== 核心状态 ====
+    let isRightFullscreen = false; // 右侧是否全屏
+    let isLeftFullscreen = false; // 左侧是否全屏
+    // ==== 核心排版引擎 (响应右侧容器大小变化) ====
+    function updateCanvasLayout() {
+      if (isRightFullscreen) {
+        canvasWrapper.style.width = "100%";
+        canvasWrapper.style.height = "100%";
+        canvasWrapper.style.transform = "none";
+        canvasWrapper.style.boxShadow = "none";
 
-      // ==== 核心状态 ====
-      let isRightFullscreen = false; // 右侧是否全屏
-      let isLeftFullscreen = false; // 左侧是否全屏
-      // ==== 核心排版引擎 (响应右侧容器大小变化) ====
-      function updateCanvasLayout() {
-        if (isRightFullscreen) {
-          canvasWrapper.style.width = "100%";
-          canvasWrapper.style.height = "100%";
-          canvasWrapper.style.transform = "none";
-          canvasWrapper.style.boxShadow = "none";
+        rightPanel.style.alignItems = "stretch";
+        rightPanel.style.justifyContent = "stretch";
+      } else {
+        const padding = 80;
+        const availableWidth = rightPanel.clientWidth;
+        const availableHeight = rightPanel.clientHeight;
 
-          rightPanel.style.alignItems = "stretch";
-          rightPanel.style.justifyContent = "stretch";
-        } else {
-          const padding = 80;
-          const availableWidth = rightPanel.clientWidth;
-          const availableHeight = rightPanel.clientHeight;
+        // 如果左侧全屏，右侧宽度会被挤压到0，此时暂停缩放计算即可
+        if (availableWidth === 0) return;
 
-          // 如果左侧全屏，右侧宽度会被挤压到0，此时暂停缩放计算即可
-          if (availableWidth === 0) return;
+        canvasWrapper.style.width = "1920px";
+        canvasWrapper.style.height = "1080px";
+        canvasWrapper.style.boxShadow =
+          "0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.02)";
 
-          canvasWrapper.style.width = "1920px";
-          canvasWrapper.style.height = "1080px";
-          canvasWrapper.style.boxShadow =
-            "0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.02)";
+        const scale = Math.min(
+          (availableWidth - padding) / 1920,
+          (availableHeight - padding) / 1080
+        );
+        canvasWrapper.style.transform = `scale(${scale})`;
 
-          const scale = Math.min(
-            (availableWidth - padding) / 1920,
-            (availableHeight - padding) / 1080
-          );
-          canvasWrapper.style.transform = `scale(${scale})`;
-
-          rightPanel.style.alignItems = "center";
-          rightPanel.style.justifyContent = "center";
-        }
+        rightPanel.style.alignItems = "center";
+        rightPanel.style.justifyContent = "center";
       }
+    }
 
-      const resizeObserver = new ResizeObserver(() => {
-        updateCanvasLayout();
-      });
-      resizeObserver.observe(rightPanel);
+    const resizeObserver = new ResizeObserver(() => {
+      updateCanvasLayout();
+    });
+    resizeObserver.observe(rightPanel);
 
-      // ==== 1. 左侧展开/收起 逻辑 ====
-      leftToggleBtn.addEventListener("click", () => {
-        isLeftFullscreen = !isLeftFullscreen;
+    // ==== 1. 左侧展开/收起 逻辑 ====
+    leftToggleBtn.addEventListener("click", () => {
+      isLeftFullscreen = !isLeftFullscreen;
 
-        if (isLeftFullscreen) {
-          // 进入左侧全屏：
-          // 防御性处理：如果右侧此时正好是全屏，强制重置右侧状态
-          if (isRightFullscreen) {
-            isRightFullscreen = false;
-            iconExpand.style.display = "block";
-            iconShrink.style.display = "none";
-            fullscreenBtn.title = "全屏响应式预览";
-          }
-
-          leftPanel.style.width = "100%";
-          leftIframe.style.width = "100%"; // 内部iframe也跟随展开到100%
-
-          leftToggleBtn.querySelector("svg").style.transform = "rotate(180deg)";
-          leftToggleBtn.title = "还原侧边栏";
-        } else {
-          // 还原为看板模式：
-          leftPanel.style.width = "500px";
-          leftIframe.style.width = "500px"; // 内部iframe恢复500px锁定
-
-          leftToggleBtn.querySelector("svg").style.transform = "rotate(0deg)";
-          leftToggleBtn.title = "展开为全屏";
-        }
-        updateCanvasLayout();
-      });
-
-      // ==== 2. 右侧全屏/还原 逻辑 ====
-      fullscreenBtn.addEventListener("click", () => {
-        isRightFullscreen = !isRightFullscreen;
-
+      if (isLeftFullscreen) {
+        // 进入左侧全屏：
+        // 防御性处理：如果右侧此时正好是全屏，强制重置右侧状态
         if (isRightFullscreen) {
-          // 进入右侧全屏：
-          // 防御性处理：重置左侧全屏状态与图标
-          isLeftFullscreen = false;
-          leftToggleBtn.querySelector("svg").style.transform = "rotate(0deg)";
-          leftToggleBtn.title = "展开为全屏";
-
-          leftPanel.style.width = "0px";
-          leftIframe.style.width = "500px"; // 左侧被挤没时，依然锁死500px防止内部变形
-
-          iconExpand.style.display = "none";
-          iconShrink.style.display = "block";
-          fullscreenBtn.title = "退出全屏-恢复看板";
-        } else {
-          // 退出右侧全屏 (恢复看板)：
-          leftPanel.style.width = "500px";
-          leftIframe.style.width = "500px";
-
+          isRightFullscreen = false;
           iconExpand.style.display = "block";
           iconShrink.style.display = "none";
           fullscreenBtn.title = "全屏响应式预览";
         }
-        updateCanvasLayout();
-      });
 
-      // ==== 刷新按钮逻辑 ====
-      refreshBtn.addEventListener("click", () => {
-        const svg = refreshBtn.querySelector("svg");
-        svg.style.transition = "transform 0.4s ease";
-        svg.style.transform = "rotate(180deg)";
-        setTimeout(() => {
-          svg.style.transition = "none";
-          svg.style.transform = "rotate(0deg)";
-        }, 400);
-        iframe.contentWindow.location.reload();
-      });
+        leftPanel.style.width = "100%";
+        leftIframe.style.width = "100%"; // 内部iframe也跟随展开到100%
 
-      // ==== 跨域 DOM 注入逻辑 (包含你所有的优化：截断修复与包裹) ====
-      iframe.onload = () => {
-        let iframeDocument;
-        try {
-          iframeDocument =
-            iframe.contentDocument || iframe.contentWindow.document;
-        } catch (error) {
-          return;
-        }
+        leftToggleBtn.querySelector("svg").style.transform = "rotate(180deg)";
+        leftToggleBtn.title = "还原侧边栏";
+      } else {
+        // 还原为看板模式：
+        leftPanel.style.width = "500px";
+        leftIframe.style.width = "500px"; // 内部iframe恢复500px锁定
 
-        const inspectorHtml = `
-                <div id="inspector-overlay" style="position: absolute; border: 2px solid #007bff; background-color: rgba(0, 123, 255, 0.1); pointer-events: none; z-index: 9999; display: none; transition: all 0.1s ease-out;">
-                    <div id="inspector-badge" style="position: absolute; background-color: #007bff; color: #fff; font-size: 12px; padding: 4px 8px; display: flex; align-items: center; gap: 8px; pointer-events: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.2); white-space: nowrap;">
-                        <span id="inspector-id-text">#target-id</span>
-                        <button class="copy-btn" id="inspector-copy-btn" style="background: #fff; color: #007bff; border: none; border-radius: 3px; padding: 2px 6px; font-size: 12px; cursor: pointer; font-weight: bold; transition: transform 0.1s;">复制名称</button>
-                    </div>
-                </div>
-            `;
-
-        const tempDiv = iframeDocument.createElement("div");
-        tempDiv.innerHTML = inspectorHtml;
-        const overlayNode = tempDiv.firstElementChild;
-        iframeDocument.body.appendChild(overlayNode);
-
-        const overlay = iframeDocument.getElementById("inspector-overlay");
-        const badgeContainer = iframeDocument.getElementById("inspector-badge");
-        const badgeText = iframeDocument.getElementById("inspector-id-text");
-        const copyBtn = iframeDocument.getElementById("inspector-copy-btn");
-        let currentTargetStr = "";
-
-        iframeDocument.addEventListener(
-          "click",
-          function (e) {
-            if (e.target.id === "inspector-copy-btn") {
-              copyToClipboard(currentTargetStr);
-              copyBtn.textContent = "✅ 已复制";
-              setTimeout(() => {
-                copyBtn.textContent = "复制名称";
-              }, 1500);
-              return;
-            }
-            if (e.target.closest("#inspector-overlay")) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            const target = e.target;
-            const rect = target.getBoundingClientRect();
-            const scrollTop =
-              iframeDocument.documentElement.scrollTop ||
-              iframeDocument.body.scrollTop;
-            const scrollLeft =
-              iframeDocument.documentElement.scrollLeft ||
-              iframeDocument.body.scrollLeft;
-
-            overlay.style.top = rect.top + scrollTop + "px";
-            overlay.style.left = rect.left + scrollLeft + "px";
-            overlay.style.width = rect.width + "px";
-            overlay.style.height = rect.height + "px";
-            overlay.style.display = "block";
-
-            // 智能碰撞检测，防止顶部被截断
-            if (rect.top < 30) {
-              badgeContainer.style.top = "0px";
-              badgeContainer.style.left = "0px";
-              badgeContainer.style.borderRadius = "0 0 4px 0";
-            } else {
-              badgeContainer.style.top = "-28px";
-              badgeContainer.style.left = "-2px";
-              badgeContainer.style.borderRadius = "4px 4px 4px 0";
-            }
-
-            let rawSelector = "";
-            if (target.id) {
-              rawSelector = `#${target.id}`;
-            } else if (
-              target.className &&
-              typeof target.className === "string"
-            ) {
-              const classStr = target.className.trim().replace(/\s+/g, ".");
-              rawSelector = `${target.tagName.toLowerCase()}.${classStr}`;
-            } else {
-              rawSelector = `<${target.tagName.toLowerCase()}>`;
-            }
-
-            currentTargetStr = `{${rawSelector}}`;
-            badgeText.textContent = rawSelector;
-          },
-          true
-        );
-      };
-
-      async function copyToClipboard(text) {
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch (err) {
-          const tempInput = document.createElement("input");
-          tempInput.value = text;
-          document.body.appendChild(tempInput);
-          tempInput.select();
-          document.execCommand("copy");
-          document.body.removeChild(tempInput);
-        }
+        leftToggleBtn.querySelector("svg").style.transform = "rotate(0deg)";
+        leftToggleBtn.title = "展开为全屏";
       }
-    </script>
-  </body>
+      updateCanvasLayout();
+    });
+
+    // ==== 2. 右侧全屏/还原 逻辑 ====
+    fullscreenBtn.addEventListener("click", () => {
+      isRightFullscreen = !isRightFullscreen;
+
+      if (isRightFullscreen) {
+        // 进入右侧全屏：
+        // 防御性处理：重置左侧全屏状态与图标
+        isLeftFullscreen = false;
+        leftToggleBtn.querySelector("svg").style.transform = "rotate(0deg)";
+        leftToggleBtn.title = "展开为全屏";
+
+        leftPanel.style.width = "0px";
+        leftIframe.style.width = "500px"; // 左侧被挤没时，依然锁死500px防止内部变形
+
+        iconExpand.style.display = "none";
+        iconShrink.style.display = "block";
+        fullscreenBtn.title = "退出全屏-恢复看板";
+      } else {
+        // 退出右侧全屏 (恢复看板)：
+        leftPanel.style.width = "500px";
+        leftIframe.style.width = "500px";
+
+        iconExpand.style.display = "block";
+        iconShrink.style.display = "none";
+        fullscreenBtn.title = "全屏响应式预览";
+      }
+      updateCanvasLayout();
+    });
+
+    // ==== 刷新按钮逻辑 ====
+    refreshBtn.addEventListener("click", () => {
+      const svg = refreshBtn.querySelector("svg");
+      svg.style.transition = "transform 0.4s ease";
+      svg.style.transform = "rotate(180deg)";
+      setTimeout(() => {
+        svg.style.transition = "none";
+        svg.style.transform = "rotate(0deg)";
+      }, 400);
+      iframe.contentWindow.location.reload();
+    });
+    let domPickerOpen = false;
+    toggleDomPickerBtn.addEventListener("click", () => {
+      iframe.contentWindow.postMessage({
+        type: 'TOGGLE_DOM_PICKER'
+      }, '*')
+      domPickerOpen = !domPickerOpen;
+      toggleDomPickerBtn.title = domPickerOpen ? '关闭元素选择' : '开启元素选择';
+    })
+  </script>
+</body>
+
 </html>
