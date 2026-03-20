@@ -235,7 +235,7 @@ export function installDomPicker(options = {}) {
   const toggle = panel.querySelector(`#${TOGGLE_ID}`)
   const copySource = badge.querySelector(`#${COPY_SOURCE_ID}`)
 
-  let enabled = false
+  let enabled = true
   let activeElement = null
   let currentCommand = createEditorCommand('')
 
