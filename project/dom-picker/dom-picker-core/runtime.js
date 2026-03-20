@@ -356,7 +356,7 @@ export function installDomPicker(options = {}) {
   window.addEventListener('scroll', handleScrollOrResize, true)
   window.addEventListener('resize', handleScrollOrResize)
   window.addEventListener('message',(event)=>{
-    if(event.origin !== 'http://localhost:8080' && event.origin !== 'http://127.0.0.1:8080'){
+    if(event.origin !== 'http://localhost:8080' && event.origin !== 'http://127.0.0.1:8080'&& event.origin !== 'http://127.0.0.1:7687'){
       return
     }
     if(event.data.type === 'TOGGLE_DOM_PICKER'){
