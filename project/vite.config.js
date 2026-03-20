@@ -1,12 +1,19 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import createDomPickerReactPlugin from '@dom-picker/react/vite-plugin'
+import vue from '@vitejs/plugin-vue'
+import createDomPickerVueNodeTransform from '@dom-picker/vue/node-transform'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [createDomPickerReactPlugin(), react()],
+// https://vite.dev/config/ 
+export default defineConfig(({ command }) => ({
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          nodeTransforms: command === 'serve' ? [createDomPickerVueNodeTransform()] : [],
+        },
+      },
+    }),
+  ],
   server: {
-    port: 7686,
-    host: true
-  }
-})
+    port: 7686,   // 你也可以在这里指定固定的端口
+  },
+}))

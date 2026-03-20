@@ -1,3 +1,45 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+
+// 控制页面进入时的动画状态
+const isLoaded = ref(true)
+
+// Vue 3 最佳实践：在组件挂载完成后改变状态，触发 CSS 过渡动画
+onMounted(() => {
+  // 使用 requestAnimationFrame 或极短的 setTimeout
+  // 可以确保浏览器已经完成了初始渲染，让过渡动画更加丝滑
+  requestAnimationFrame(() => {
+    isLoaded.value = true
+  })
+})
+</script>
+
+<template>
+  <main class="container">
+    <div class="glow-bg" aria-hidden="true">
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+      <div class="glow glow-3"></div>
+    </div>
+
+    <div class="noise" aria-hidden="true"></div>
+    <div class="grid" aria-hidden="true"></div>
+
+    <div class="content">
+      <div class="loaded">
+        <div class="badge">
+          <span class="badge-icon">✨</span>
+          <span class="badge-text">系统已就绪，等待注入灵魂</span>
+        </div>
+
+        <h1 class="title">这是一张<span class="highlight">空白画布</span></h1>
+
+        <p class="subtitle">请开始构建你的项目</p>
+      </div>
+    </div>
+  </main>
+</template>
+<style scoped>
 * {
     margin: 0;
     padding: 0;
@@ -176,3 +218,4 @@
         font-size: 1.25rem;
     }
 }
+</style>
