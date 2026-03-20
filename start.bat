@@ -24,7 +24,7 @@ set "CMD2=Write-Host '--- [2/5] 进入子工程 npm install ---' -ForegroundColo
 
 set "CMD3=Write-Host '--- [3/5] 启动子工程 Vite (新窗口) ---' -ForegroundColor Yellow; Start-Process powershell -ArgumentList '-NoExit', '-Command', 'npm run dev'; Start-Sleep -Seconds 5; "
 
-set "CMD4=Write-Host '--- [4/5] 回到父工程 node server.js ---' -ForegroundColor Green; cd ..; npx --yes http-server a 127.0.0.1 -p 7687 -o chat.html; "
+set "CMD4=Write-Host '--- [4/5] 回到父工程 node server.js ---' -ForegroundColor Green; cd ..; npx --yes http-server -a 127.0.0.1 -p 7687 -o chat.html; "
 
 
 
