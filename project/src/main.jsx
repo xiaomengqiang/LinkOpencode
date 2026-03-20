@@ -7,7 +7,7 @@ import App from './App.jsx'
 if (import.meta.env.DEV) {
   installReactDomPicker()
 }
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root-react')).render(
   <StrictMode>
     <App />
   </StrictMode>,
