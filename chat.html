@@ -177,7 +177,7 @@
         </svg>
       </button>
 
-      <button id="toggleDomPicker-btn" class="tool-btn" title="开启元素选择">
+      <button id="toggleDomPicker-btn" class="tool-btn" title="关闭元素选择">
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
           stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path>
@@ -315,7 +315,7 @@
       }, 400);
       iframe.contentWindow.location.reload();
     });
-    let domPickerOpen = false;
+    let domPickerOpen = true;
     toggleDomPickerBtn.addEventListener("click", () => {
       iframe.contentWindow.postMessage({
         type: 'TOGGLE_DOM_PICKER'
