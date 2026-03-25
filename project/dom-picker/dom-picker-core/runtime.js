@@ -146,6 +146,116 @@ function createPanel() {
   return panel
 }
 
+function readSourceFromVueInstance(instance) {
+  if (!instance) {
+    return ''
+  }
+
+  const candidates = [
+    instance.vnode?.props,
+    instance.attrs,
+    instance.subTree?.props,
+    instance.subTree?.component?.vnode?.props,
+  ]
+
+  for (const candidate of candidates) {
+    const location = candidate?.[ATTRIBUTE_NAME]
+    if (typeof location === 'string' && location) {
+      return location
+    }
+  }
+
+  return ''
+}
+
+function readSourceFromVNode(vnode) {
+  if (!vnode) {
+    return ''
+  }
+
+  const candidates = [
+    vnode.props,
+    vnode.component?.vnode?.props,
+    vnode.component?.attrs,
+    vnode.component?.subTree?.props,
+  ]
+
+  for (const candidate of candidates) {
+    const location = candidate?.[ATTRIBUTE_NAME]
+    if (typeof location === 'string' && location) {
+      return location
+    }
+  }
+
+  return ''
+}
+
+function getVueElementVNodes(element) {
+  if (!(element instanceof Element)) {
+    return []
+  }
+
+  const ownVNode = element.__vnode
+  const ownParentComponent = element.__vueParentComponent
+  const appInstance = element.__vue_app__?._instance
+
+  return [
+    ownVNode,
+    ownVNode?.component?.vnode,
+    ownParentComponent?.vnode,
+    ownParentComponent?.subTree,
+    appInstance?.vnode,
+    appInstance?.subTree,
+  ].filter(Boolean)
+}
+
+function resolveVueComponentSource(target) {
+  if (!(target instanceof Element)) {
+    return null
+  }
+
+  let currentElement = target
+
+  while (currentElement) {
+    const vnodes = getVueElementVNodes(currentElement)
+    for (const vnode of vnodes) {
+      const location = readSourceFromVNode(vnode)
+      if (location) {
+        if (!currentElement.hasAttribute(ATTRIBUTE_NAME)) {
+          currentElement.setAttribute(ATTRIBUTE_NAME, location)
+        }
+
+        return {
+          element: currentElement,
+          location,
+        }
+      }
+    }
+
+    let instance = currentElement.__vueParentComponent || currentElement.__vue_app__?._instance || null
+
+    while (instance) {
+      const location = readSourceFromVueInstance(instance)
+      if (location) {
+        if (!currentElement.hasAttribute(ATTRIBUTE_NAME)) {
+          currentElement.setAttribute(ATTRIBUTE_NAME, location)
+        }
+
+        return {
+          element: currentElement,
+          location,
+        }
+      }
+
+      instance = instance.parent
+    }
+
+    currentElement = currentElement.parentElement
+  }
+
+  return null
+}
+
 function updateOverlay(overlay, element) {
   if (!element) {
     overlay.style.opacity = '0'
@@ -237,6 +347,7 @@ export function installDomPicker(options = {}) {
 
   let enabled = true
   let activeElement = null
+  let activeLocation = ''
   let currentCommand = createEditorCommand('')
 
   const syncPanel = (message, value) => {
@@ -244,20 +355,33 @@ export function installDomPicker(options = {}) {
 
   }
 
-  const getMarkedElement = (target) => {
+  const resolveMarkedTarget = (target) => {
     if (!(target instanceof Element)) {
       return null
     }
 
     if (target.closest(`#${BADGE_ID}`)) {
-      return activeElement
+      return activeElement && activeLocation
+        ? {
+            element: activeElement,
+            location: activeLocation,
+          }
+        : null
     }
 
     if (target.closest(`#${PANEL_ID}`)) {
       return null
     }
 
-    return target.closest(`[${ATTRIBUTE_NAME}]`)
+    const markedElement = target.closest(`[${ATTRIBUTE_NAME}]`)
+    if (markedElement) {
+      return {
+        element: markedElement,
+        location: markedElement.getAttribute(ATTRIBUTE_NAME) || '',
+      }
+    }
+
+    return resolveVueComponentSource(target)
   }
 
   const handlePointerMove = (event) => {
@@ -265,13 +389,14 @@ export function installDomPicker(options = {}) {
       return
     }
 
-    activeElement = getMarkedElement(event.target)
+    const resolvedTarget = resolveMarkedTarget(event.target)
+    activeElement = resolvedTarget?.element || null
+    activeLocation = resolvedTarget?.location || ''
     updateOverlay(overlay, activeElement)
 
-    if (activeElement) {
-      const location = activeElement.getAttribute(ATTRIBUTE_NAME)
-      updateBadge(badge, activeElement, location)
-      syncPanel('Ready to inspect', location)
+    if (activeElement && activeLocation) {
+      updateBadge(badge, activeElement, activeLocation)
+      syncPanel('Ready to inspect', activeLocation)
     } else {
       updateBadge(badge, null, '')
       syncPanel('No source marker on current node', idleHint)
@@ -287,12 +412,15 @@ export function installDomPicker(options = {}) {
       return
     }
 
-    const element = getMarkedElement(event.target)
-    if (!element) {
+    const resolvedTarget = resolveMarkedTarget(event.target)
+    if (!resolvedTarget?.element || !resolvedTarget.location) {
       return
     }
 
-    const location = element.getAttribute(ATTRIBUTE_NAME)
+    const element = resolvedTarget.element
+    const location = resolvedTarget.location
+    activeElement = element
+    activeLocation = location
     event.preventDefault()
     event.stopPropagation()
 
@@ -305,7 +433,7 @@ export function installDomPicker(options = {}) {
   const handleScrollOrResize = () => {
     if (enabled) {
       updateOverlay(overlay, activeElement)
-      updateBadge(badge, activeElement, activeElement?.getAttribute(ATTRIBUTE_NAME))
+      updateBadge(badge, activeElement, activeLocation)
     }
   }
 
@@ -316,6 +444,7 @@ export function installDomPicker(options = {}) {
 
     if (!enabled) {
       activeElement = null
+      activeLocation = ''
       updateOverlay(overlay, null)
       updateBadge(badge, null, '')
       syncPanel('Picker paused', 'Turn it back on to inspect nodes')
@@ -330,7 +459,7 @@ export function installDomPicker(options = {}) {
   copySource.addEventListener('click', async (event) => {
     event.preventDefault()
     event.stopPropagation()
-    const location = badge.dataset.source || activeElement?.getAttribute(ATTRIBUTE_NAME)
+    const location = badge.dataset.source || activeLocation || activeElement?.getAttribute(ATTRIBUTE_NAME)
     if (!location) {
       // status.textContent = 'No selected source to copy' 
       return
@@ -356,9 +485,6 @@ export function installDomPicker(options = {}) {
   window.addEventListener('scroll', handleScrollOrResize, true)
   window.addEventListener('resize', handleScrollOrResize)
   window.addEventListener('message',(event)=>{
-    if(event.origin !== 'http://localhost:8080' && event.origin !== 'http://127.0.0.1:8080'&& event.origin !== 'http://127.0.0.1:7687'){
-      return
-    }
     if(event.data.type === 'TOGGLE_DOM_PICKER'){
       toggle.click()
     }

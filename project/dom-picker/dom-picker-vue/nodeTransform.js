@@ -4,6 +4,14 @@ import { ElementTypes, NodeTypes } from '@vue/compiler-core'
 const ATTRIBUTE_NAME = 'data-dom-picker-source'
 const CWD = globalThis.process?.cwd?.() ?? ''
 
+function isVueComponent(node) {
+  if (node.type !== NodeTypes.ELEMENT || node.tagType !== ElementTypes.COMPONENT) {
+    return false
+  }
+
+  return typeof node.tag === 'string'
+}
+
 function createTextNode(content, loc) {
   return {
     type: NodeTypes.TEXT,
@@ -49,7 +57,14 @@ function getElementIdentifier(node) {
 
 export default function createDomPickerVueNodeTransform() {
   return (node, context) => {
-    if (node.type !== NodeTypes.ELEMENT || node.tagType !== ElementTypes.ELEMENT) {
+    if (node.type !== NodeTypes.ELEMENT) {
+      return
+    }
+
+    const shouldMarkNativeElement = node.tagType === ElementTypes.ELEMENT
+    const shouldMarkComponent = isVueComponent(node)
+
+    if (!shouldMarkNativeElement && !shouldMarkComponent) {
       return
     }
 
