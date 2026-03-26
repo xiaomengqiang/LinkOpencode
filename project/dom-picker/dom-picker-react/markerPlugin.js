@@ -3,10 +3,6 @@ import path from 'node:path'
 const ATTRIBUTE_NAME = 'data-dom-picker-source'
 const CWD = globalThis.process?.cwd?.() ?? ''
 
-function isIntrinsicElement(nameNode) {
-  return nameNode?.type === 'JSXIdentifier' && /^[a-z]/.test(nameNode.name)
-}
-
 // 获取元素标识符（#id 或 标签.class）
 function getElementIdentifier(node, t) {
   let id = ''
@@ -46,10 +42,6 @@ export default function domPickerReactMarkerPlugin({ types: t }) {
       JSXOpeningElement(pathState, state) {
         const { node } = pathState
         const elementNode = pathState.parentPath?.node
-
-        if (!isIntrinsicElement(node.name)) {
-          return
-        }
 
         const hasMarker = node.attributes.some((attribute) => {
           return (
